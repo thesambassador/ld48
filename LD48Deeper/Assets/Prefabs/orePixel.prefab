@@ -100,8 +100,10 @@ MonoBehaviour:
   TowardsPlayerSpeed: 30
   StartExplosiveSpeed: 20
   Target: {fileID: 0}
-  DeathDist: 0.05
+  DeathDist: 0.25
   VelocityLerpTime: 0.75
+  MedianAudioPitch: 1.5
+  AmmoRatioMultiplier: 2
   source: {fileID: -4191147133065654510}
   Rend: {fileID: 222531210315261491}
 --- !u!82 &-4191147133065654510

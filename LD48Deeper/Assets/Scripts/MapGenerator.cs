@@ -68,22 +68,25 @@ public class MapGenerator : MonoBehaviour {
 			for (int y = 0; y < ChunkSize; y++) {
 				float perlin = MainPerlin.GetPerlin(x + xStart, y + yStart);
 				float solidThreshold = SolidThresholdPerlin.GetPerlin(x + xStart, y + yStart);
+				//if we're generating a solid tile:
 				if (perlin > solidThreshold) {
+					//check whether it should be explosive
 					if (ShouldBeExplosive(x + xStart, y + yStart)) {
 						TileBase newTile = ExplosiveTiles[0];
 						tilemap.SetTile(new Vector3Int(x, y, 0), newTile);
 					}
 					else {
-						
-
+						//determine how much ore the tile should have
 						float normOre = Mathf.InverseLerp(solidThreshold, 1, perlin);
 						normOre = Mathf.InverseLerp(.5f, 1, normOre);
 						int oreAmount = Mathf.FloorToInt(normOre / (1.0f / OreTiles.Length));
 						oreAmount = Mathf.Clamp(oreAmount, 0, OreTiles.Length);
 
+						//set the tile to the normal tile thing
 						TileBase newTile = TerrainTiles[0];
 						tilemap.SetTile(new Vector3Int(x, y, 0), newTile);
 
+						//if there's ore, need to set the foreground tile and ore amount
 						if (oreAmount != 0) {
 							TileBase oreTile = OreTiles[oreAmount-1];
 							chunk.ForegroundTilemap.SetTile(new Vector3Int(x, y, 0), oreTile);
@@ -98,6 +101,7 @@ public class MapGenerator : MonoBehaviour {
 				else {
 					tilemap.SetTile(new Vector3Int(x, y, 0), null);
 					chunk.ForegroundTilemap.SetTile(new Vector3Int(x, y, 0), null);
+					chunk.OreAmount[x, y] = 0;
 				}
 			}
 		}
@@ -122,7 +126,7 @@ public class MapGenerator : MonoBehaviour {
 					if (ShouldBeExplosive(x + xStart, y + yStart)) {
 						TileBase newTile = ExplosiveTiles[0];
 						_tiles[(y * ChunkSize) + x] = newTile;
-						_positions[(y * ChunkSize) + x] = new Vector3Int(x, y, 0);
+						_positions[(y * ChunkSize) + x].Set(x, y, 0);
 					}
 					else {
 						float normOre = Mathf.InverseLerp(solidThreshold, 1, perlin);
@@ -131,12 +135,12 @@ public class MapGenerator : MonoBehaviour {
 						oreAmount = Mathf.Clamp(oreAmount, 0, TerrainTiles.Length - 1);
 						TileBase newTile = TerrainTiles[oreAmount];
 						_tiles[(y * ChunkSize) + x] = newTile;
-						_positions[(y * ChunkSize) + x] = new Vector3Int(x, y, 0);
+						_positions[(y * ChunkSize) + x].Set(x, y, 0);
 					}
 				}
 				else {
 					_tiles[(y * ChunkSize) + x] = null;
-					_positions[(y * ChunkSize) + x] = new Vector3Int(x, y, 0);
+					_positions[(y * ChunkSize) + x].Set(x, y, 0);
 				}
 			}
 		}

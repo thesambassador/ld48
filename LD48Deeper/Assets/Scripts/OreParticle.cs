@@ -13,6 +13,8 @@ public class OreParticle : MonoBehaviour
 	public float DeathDist = .3f;
 
 	public float VelocityLerpTime = .75f;
+	public float MedianAudioPitch = .8f;
+	public float AmmoRatioMultiplier = .4f;
 
 	public AudioSource source;
 
@@ -36,15 +38,14 @@ public class OreParticle : MonoBehaviour
 		while(Vector2.Distance(transform.position, Target.transform.position) > DeathDist) {
 			Vector2 towardsPlayer = (Target.transform.position - transform.position).normalized * TowardsPlayerSpeed;
 			_curVel = Vector2.Lerp(_startVel, towardsPlayer, t / VelocityLerpTime);
-			if(Vector2.Distance(Target.transform.position, transform.position) <= (_curVel.magnitude * Time.deltaTime)) {
-				break;
-			}
+			
 			transform.Translate(_curVel * Time.deltaTime);
 			t += Time.deltaTime;
 			yield return null;
 		}
 
-		Target.CollectOre(1);
+		float ammoRatio = Target.CollectOre(1) - .5f;
+		source.pitch = MedianAudioPitch + ammoRatio * AmmoRatioMultiplier;
 		source.Play();
 		Rend.enabled = false;
 		while (source.isPlaying) {

@@ -11,6 +11,7 @@ public class DestructibleTile : RuleTile
 	public bool Explodes = false;
 	public float ExplodeRadius = 2;
 	public int OreAmount = 0;
+	public TileBase[] OreForegroundTiles;
 	public GameObject DestroyEffect;
 
 }

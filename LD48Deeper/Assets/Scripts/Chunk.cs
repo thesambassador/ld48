@@ -24,6 +24,10 @@ public class Chunk : MonoBehaviour {
 	public int[,] OreAmount;
 
 	public CustomPerlin CurPerlin;
+
+	private Vector3Int[] _tilePositions;
+	private TileBase[] _tiles;
+
 	// Start is called before the first frame update
 	void Start() {
 		NoiseRenderer.enabled = false;
@@ -31,8 +35,28 @@ public class Chunk : MonoBehaviour {
 		//ShowSolide();
 	}
 
+	public void Initialize(int chunkSize) {
+		ChunkSize = chunkSize;
+		_tilePositions = new Vector3Int[ChunkSize * ChunkSize];
+		_tiles = new TileBase[_tilePositions.Length];
+		OreAmount = new int[ChunkSize, ChunkSize];
+	}
+
+	public void SetTile(int x, int y, DestructibleTile tile, int oreSqrRt) {
+		int index = (y * ChunkSize) + x;
+		_tiles[index] = (tile as TileBase);
+
+		//set ore stuff
+		ForegroundTilemap.SetTile(_tilePositions[index], tile.OreForegroundTiles[oreSqrRt]);
+		OreAmount[x, y] = (int)Mathf.Pow(2, oreSqrRt);
+	}
+
+	public void ApplyTiles() {
+		ChunkTilemap.SetTiles(_tilePositions, _tiles);
+	}
+
 	public void SetChunkStart(int x, int y) {
-		ChunkStart = new Vector2Int(x, y);
+		ChunkStart.Set(x, y);
 		Generate();
 
 		if (NoiseRenderer.enabled && CurPerlin != null) {
@@ -49,8 +73,6 @@ public class Chunk : MonoBehaviour {
 		GenerateTexture(MapGen.ExplosivePerlin);
 		NoiseRenderer.enabled = true;
 		TileRenderer.enabled = false;
-
-
 	}
 
 	[NaughtyAttributes.Button("Show Solid")]
@@ -79,7 +101,7 @@ public class Chunk : MonoBehaviour {
 		}
 		DTilemap.TryDestroyTileAt(pos, ore);
 		ForegroundTilemap.SetTile(pos, null);
-		print("destroyed tile at " + pos + " with ore " + ore);
+		//print("destroyed tile at " + pos + " with ore " + ore);
 	}
 
 }

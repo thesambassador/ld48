@@ -7,6 +7,8 @@ public class DepthDisplay : MonoBehaviour
 	public PlayerController PlayerObject;
 	public TMPro.TMP_Text DisplayText;
 
+	public int CurDepth = 0;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -24,6 +26,7 @@ public class DepthDisplay : MonoBehaviour
     }
 
 	public void SetDepth(int depth) {
+		CurDepth = depth;
 		DisplayText.text = "Depth: " + depth;
 	}
 }

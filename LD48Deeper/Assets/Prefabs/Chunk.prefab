@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6453944324121976802}
   - component: {fileID: 5534920077777879101}
   - component: {fileID: 1855805540754253531}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Foreground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -147,7 +147,7 @@ TilemapRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 2a5d1807cbccd3a4d902a50023956f1f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -187,7 +187,7 @@ GameObject:
   - component: {fileID: 995895347021107021}
   - component: {fileID: 602153160917493102}
   - component: {fileID: 1449890313813884007}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Chunk
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -260,7 +260,7 @@ GameObject:
   - component: {fileID: 1938817321464522086}
   - component: {fileID: 5827386862211569759}
   - component: {fileID: 2942221267190346126}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Quad
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -351,7 +351,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5662699237483610003}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: NoiseTransform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -386,7 +386,7 @@ GameObject:
   - component: {fileID: 7947729951841671963}
   - component: {fileID: 7947729951841671960}
   - component: {fileID: 7947729951841671967}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: EmptyChunk
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -522,7 +522,7 @@ TilemapRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 2a5d1807cbccd3a4d902a50023956f1f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

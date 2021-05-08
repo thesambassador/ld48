@@ -52,6 +52,22 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
+                },
+                {
+                    "name": "VolumeUp",
+                    "type": "Button",
+                    "id": "a7d7c5ba-647e-46c8-b09e-d02432fe220b",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "VolumeDown",
+                    "type": "Button",
+                    "id": "2ab25904-dc39-482a-a70a-06484b47f1bf",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
                 }
             ],
             "bindings": [
@@ -338,6 +354,28 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "Exit",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "49ee057b-d450-408b-8cc9-d172e054a95c",
+                    "path": "<Keyboard>/equals",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Gamepad;Touch;Joystick;XR",
+                    "action": "VolumeUp",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "bbe874cf-85cf-4d56-b0c5-43e9d0243540",
+                    "path": "<Keyboard>/minus",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse;Touch;Joystick;XR;Gamepad",
+                    "action": "VolumeDown",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

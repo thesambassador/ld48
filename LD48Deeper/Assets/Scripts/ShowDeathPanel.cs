@@ -15,6 +15,9 @@ public class ShowDeathPanel : MonoBehaviour
 
 	public bool GameOver = false;
 
+	public float GameOverDelay = .5f;
+	private float _gameOverTimer;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -23,12 +26,12 @@ public class ShowDeathPanel : MonoBehaviour
 
 	// Update is called once per frame
 	void Update() {
-
+		_gameOverTimer -= Time.deltaTime;
 	}
 
 	public void OnFireBoots() {
 
-		if (GameOver) {
+		if (GameOver && _gameOverTimer <= 0) {
 			SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 		}
 	}
@@ -47,7 +50,7 @@ public class ShowDeathPanel : MonoBehaviour
 		HighScoreText.text = highScore.ToString();
 
 		HighScoreCanvas.DOFade(1, .3f);
-
+		_gameOverTimer = GameOverDelay;
 	}
 
 	public int GetHighScore() {

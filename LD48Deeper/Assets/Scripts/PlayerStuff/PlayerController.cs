@@ -30,6 +30,7 @@ public class PlayerController : MonoBehaviour
 	public PauseHandler Pause;
 
 	public float BootImpulse = 10;
+	private float _timeSinceLastFired = 0;
 
 	public Transform SpriteTransform;
     // Start is called before the first frame update
@@ -44,7 +45,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		
+		_timeSinceLastFired += Time.deltaTime;
 	}
 
 	private void FixedUpdate() {
@@ -74,6 +75,14 @@ public class PlayerController : MonoBehaviour
 		}
 	}
 
+	public void OnVolumeDown() {
+		
+		AudioListener.volume = Mathf.Clamp(AudioListener.volume - .1f, 0, 1);
+	}
+
+	public void OnVolumeUp() {
+		AudioListener.volume = Mathf.Clamp(AudioListener.volume + .1f, 0, 1);
+	}
 	
 	public void OnPause() {
 		Pause.TogglePause();
@@ -88,7 +97,8 @@ public class PlayerController : MonoBehaviour
 					newVel.y *= .5f;
 					_rb.velocity = newVel; //half downward velocity
 				}
-				_rb.AddForce(Vector2.up * BootImpulse, ForceMode2D.Impulse);
+				_rb.AddForce(Vector2.up * GetBootImpulse(), ForceMode2D.Impulse);
+				_timeSinceLastFired = 0;
 				Bullet newBullet = Instantiate(BootBulletPrefab, BootBulletSpawnPoint.position, Quaternion.identity);
 				newBullet.SetVelocityDirection(Vector2.down);
 
@@ -99,13 +109,21 @@ public class PlayerController : MonoBehaviour
 			}
 		}
 	}
+	public float BootFullChargeTime = .1f;
+	public float BootMinImpulse = 2;
+	public float GetBootImpulse() {
+		float result = Mathf.Lerp(BootMinImpulse, BootImpulse, _timeSinceLastFired / BootFullChargeTime);
+		print("boots: " + result);
+		return result;
+	}
 
 	public void OnExit() {
 		Application.Quit();
 	}
 
-	public void CollectOre(int amount) {
+	public float CollectOre(int amount) {
 		_ammo.AddAmmo(amount * OreMultiplier);
+		return (float)_ammo.CurrentAmmo / _ammo.MaxAmmo;
 		//PlayerAudioSource.pitch = Random.Range(.9f, 1.6f);
 		//PlayerAudioSource.PlayOneShot(OreAudioClip, 4);
 	}
@@ -117,19 +135,42 @@ public class PlayerController : MonoBehaviour
 		AudioSource.PlayClipAtPoint(DeathAudioClip, transform.position);
 		DeathPanel.Show(transform.position);
 		Camera.main.transform.parent = null;
+		GetComponent<Collider2D>().enabled = false;
 
+		_rb.velocity = Vector3.zero;
 		_rb.isKinematic = true;
 		SpriteTransform.gameObject.SetActive(false);
 	}
 
+
+	bool dead = false;
 	public void OnCollisionEnter2D(Collision2D collision) {
+		deathCollision = collision;
+		print("vel: " + _rb.velocity);
 		print("collision: " + collision.contacts[0].normal);
-		if(collision.contacts[0].normal.y >= .99f) {
+		if(collision.contacts[0].normal.y >= .99f) {//if we hit the top of a tile
+			print("player vel: " + _rb.velocity.y);
+			print(transform.position.y - collision.contacts[0].normal.y);
 			PlayerDeath();
+			dead = true;
+
 		}
 		else {
+			if(!dead)
+				deathCollision = collision;
 			PlayerAudioSource.pitch = 1;
 			PlayerAudioSource.PlayOneShot(BounceAudioClip);
+		}
+	}
+
+	private Collision2D deathCollision;
+	private void OnDrawGizmos() {
+		if (deathCollision != null) {
+			for (int i = 0; i < deathCollision.contactCount; i++) {
+				ContactPoint2D contact = deathCollision.GetContact(i);
+				Gizmos.DrawSphere(contact.point, .05f);
+				Gizmos.DrawLine(contact.point, contact.point + contact.normal * .2f);
+			}
 		}
 	}
 }

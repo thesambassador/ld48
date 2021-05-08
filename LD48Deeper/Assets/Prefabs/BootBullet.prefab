@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1025166181238443166}
   - component: {fileID: 5061224247009450659}
   - component: {fileID: 8233093586614904429}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: BootBullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}

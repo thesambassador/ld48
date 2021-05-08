@@ -32,6 +32,7 @@ public class InfiniteMap : MonoBehaviour
 
 		PlayerObject.transform.position = new Vector3(playerX, playerY);
 
+		StartCoroutine(ChunkGenerationCoroutine());
     }
 
 	void GenerateInitial() {
@@ -41,7 +42,7 @@ public class InfiniteMap : MonoBehaviour
 			for (int y = 0; y < ActiveChunksY; y++) {
 				Chunk newChunk = Instantiate(BaseChunkPrefab, this.transform);
 				newChunk.MapGen = MapGen;
-				newChunk.ChunkSize = MapGen.ChunkSize;
+				newChunk.Initialize(MapGen.ChunkSize);
 				newChunk.SetChunkStart(x * MapGen.ChunkSize, -y * MapGen.ChunkSize);
 				newChunk.DTilemap.PlayerObject = PlayerObject;
 				initialChunks[x, y] = newChunk;
@@ -115,7 +116,9 @@ public class InfiniteMap : MonoBehaviour
 			int newX = currentLeftColumn.ChunkStart.x - MapGen.ChunkSize; //x is one to the left of the current left
 			int newY = currentNewColumn.ChunkStart.y; //y doesn't change
 
-			currentNewColumn.SetChunkStart(newX, newY);
+
+			QueueChunkGeneration(newX, newY, currentNewColumn);
+			//currentNewColumn.SetChunkStart(newX, newY);
 
 			currentNewColumn = currentNewColumn.DownChunk;
 			currentLeftColumn = currentLeftColumn.DownChunk;
@@ -153,7 +156,8 @@ public class InfiniteMap : MonoBehaviour
 			int newX = currentRightColumn.ChunkStart.x + MapGen.ChunkSize; //x is one to the left of the current left
 			int newY = currentNewColumn.ChunkStart.y; //y doesn't change
 
-			currentNewColumn.SetChunkStart(newX, newY);
+			//currentNewColumn.SetChunkStart(newX, newY);
+			QueueChunkGeneration(newX, newY, currentNewColumn);
 
 			currentNewColumn = currentNewColumn.DownChunk;
 			currentRightColumn = currentRightColumn.DownChunk;
@@ -196,7 +200,8 @@ public class InfiniteMap : MonoBehaviour
 			int newX = curBottomRow.ChunkStart.x; //x doesn't change
 			int newY = curBottomRow.ChunkStart.y - MapGen.ChunkSize; //y goes down more
 
-			curNewRow.SetChunkStart(newX, newY);
+			//curNewRow.SetChunkStart(newX, newY);
+			QueueChunkGeneration(newX, newY, curNewRow);
 
 			curBottomRow = curBottomRow.RightChunk;
 			curNewRow = curNewRow.RightChunk;
@@ -224,5 +229,29 @@ public class InfiniteMap : MonoBehaviour
     {
 		CheckOnPlayer();
     }
+
+	public void QueueChunkGeneration(int x, int y, Chunk chunk) {
+		if(ChunkQueue == null) {
+			ChunkQueue = new Queue<(int, int, Chunk)>();
+		}
+		chunk.ChunkStart.x = x;
+		chunk.ChunkStart.y = y;
+
+		ChunkQueue.Enqueue((x, y, chunk));
+	}
+
+	private Queue<(int, int, Chunk)> ChunkQueue;
+
+	bool _gameRunning = true;
+	//for doing chunks in multiple frames
+	public IEnumerator ChunkGenerationCoroutine() {
+		while (_gameRunning) {
+			if(ChunkQueue != null && ChunkQueue.Count > 0) {
+				var chunkInfo = ChunkQueue.Dequeue();
+				chunkInfo.Item3.SetChunkStart(chunkInfo.Item1, chunkInfo.Item2);
+			}
+			yield return null;
+		}
+	}
 }
  
