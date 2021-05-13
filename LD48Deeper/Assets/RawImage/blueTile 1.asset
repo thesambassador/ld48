@@ -9,12 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca72b059b4adbfe4fa6494edfd230e73, type: 3}
-  m_Name: Destructable
+  m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: blueTile 1
   m_EditorClassIdentifier: 
-  m_Sprite: {fileID: -7301939514440735223, guid: 075fa829e7bc1af418fbe845d9139190,
-    type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 3c31937aa57eeae47852938dfd5bb5cb, type: 2}
+  m_Color: {r: 0, g: 0.90239954, b: 1, a: 1}
   m_Transform:
     e00: 1
     e01: 0
@@ -35,7 +34,3 @@ MonoBehaviour:
   m_InstancedGameObject: {fileID: 0}
   m_Flags: 1
   m_ColliderType: 1
-  Destructible: 1
-  Explodes: 0
-  ExplodeRadius: 2
-  DestroyEffect: {fileID: 0}

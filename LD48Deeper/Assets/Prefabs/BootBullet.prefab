@@ -109,9 +109,9 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8841769865015076659}
-  m_BodyType: 0
+  m_BodyType: 1
   m_Simulated: 1
-  m_UseFullKinematicContacts: 0
+  m_UseFullKinematicContacts: 1
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
@@ -138,6 +138,14 @@ MonoBehaviour:
   RB: {fileID: 1025166181238443166}
   BulletSpeed: 20
   AmmoCost: 1
+  Properties:
+    ShotPenetration: 1
+    ShotStrength: 1
+    ExplodeRadius: 0.1
+    ExplosiveMultiplier: 1
+  FullChargeColor: {r: 1, g: 0.15686275, b: 0.48235294, a: 1}
+  NormalColor: {r: 1, g: 0.5950034, b: 0.15686274, a: 1}
+  SpriteRend: {fileID: 1158193624017917048}
 --- !u!82 &8233093586614904429
 AudioSource:
   m_ObjectHideFlags: 0

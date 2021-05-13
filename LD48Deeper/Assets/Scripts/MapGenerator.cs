@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -14,15 +15,18 @@ public class MapGenerator : MonoBehaviour {
 	public DestructibleTilemap TilemapPrefab;
 	public PlayerController PlayerObject;
 
-	public TileBase[] TerrainTiles;
+	public DestructibleTile[] TerrainTiles;
 	public TileBase[] OreTiles;
-	public TileBase[] ExplosiveTiles;
+	public DestructibleTile[] ExplosiveTiles;
 
 	public List<DestructibleTilemap> GeneratedChunks;
 
 	public CustomPerlin MainPerlin;
 	public CustomPerlin SolidThresholdPerlin;
 	public CustomPerlin ExplosivePerlin;
+
+	private Dictionary<LevelFeatureSpawnPool, List<LevelFeature>> _spawnPoolFeatures;
+	public LevelFeature[] LevelFeaturePrefabs;
 
 	// Start is called before the first frame update
 	void Awake() {
@@ -31,12 +35,17 @@ public class MapGenerator : MonoBehaviour {
 		SolidThresholdPerlin = new CustomPerlin(SeedOffset, SolidThresholdMultiplier);
 		ExplosivePerlin = new CustomPerlin(SeedOffset, ExplosiveSpreadFactor, true);
 
-		//GeneratedChunks = new List<DestructibleTilemap>();
-		//for (int x = -4; x < 4; x++) {
-		//	for (int y = -1; y >= -8; y--) {
-		//		GeneratedChunks.Add(GenerateChunk(x * 16, y * 16));
-		//	}
-		//}
+		_spawnPoolFeatures = new Dictionary<LevelFeatureSpawnPool, List<LevelFeature>>();
+
+		//build level feature list
+		if(LevelFeaturePrefabs != null) {
+			foreach (LevelFeature levelFeature in LevelFeaturePrefabs) {
+				if (!_spawnPoolFeatures.ContainsKey(levelFeature.SpawnPool)) {
+					_spawnPoolFeatures[levelFeature.SpawnPool] = new List<LevelFeature>();
+				}
+				_spawnPoolFeatures[levelFeature.SpawnPool].Add(levelFeature);
+			}
+		}
 	}
 
 
@@ -59,21 +68,21 @@ public class MapGenerator : MonoBehaviour {
 
 	public void GenerateChunk(int xStart, int yStart, Chunk chunk) {
 		Tilemap tilemap = chunk.ChunkTilemap;
-		if(chunk.OreAmount == null) {
-			chunk.OreAmount = new int[ChunkSize, ChunkSize];
-		}
 		
 		chunk.transform.position = new Vector3(xStart, yStart, 0);
 		for (int x = 0; x < ChunkSize; x++) {
 			for (int y = 0; y < ChunkSize; y++) {
+				DestructibleTile toSet = null;
+				int baseOre = 0;
+
 				float perlin = MainPerlin.GetPerlin(x + xStart, y + yStart);
 				float solidThreshold = SolidThresholdPerlin.GetPerlin(x + xStart, y + yStart);
 				//if we're generating a solid tile:
 				if (perlin > solidThreshold) {
 					//check whether it should be explosive
 					if (ShouldBeExplosive(x + xStart, y + yStart)) {
-						TileBase newTile = ExplosiveTiles[0];
-						tilemap.SetTile(new Vector3Int(x, y, 0), newTile);
+						toSet = ExplosiveTiles[0];
+						//tilemap.SetTile(new Vector3Int(x, y, 0), newTile);
 					}
 					else {
 						//determine how much ore the tile should have
@@ -81,71 +90,106 @@ public class MapGenerator : MonoBehaviour {
 						normOre = Mathf.InverseLerp(.5f, 1, normOre);
 						int oreAmount = Mathf.FloorToInt(normOre / (1.0f / OreTiles.Length));
 						oreAmount = Mathf.Clamp(oreAmount, 0, OreTiles.Length);
-
+						baseOre = oreAmount;
 						//set the tile to the normal tile thing
-						TileBase newTile = TerrainTiles[0];
-						tilemap.SetTile(new Vector3Int(x, y, 0), newTile);
-
-						//if there's ore, need to set the foreground tile and ore amount
-						if (oreAmount != 0) {
-							TileBase oreTile = OreTiles[oreAmount-1];
-							chunk.ForegroundTilemap.SetTile(new Vector3Int(x, y, 0), oreTile);
-							chunk.OreAmount[x, y] = (int)Mathf.Pow(2, oreAmount);
-						}
-						else {
-							chunk.ForegroundTilemap.SetTile(new Vector3Int(x, y, 0), null);
-							chunk.OreAmount[x, y] = 0;
-						}
+						toSet = TerrainTiles[0];
+						//tilemap.SetTile(new Vector3Int(x, y, 0), newTile);
 					}
 				}
 				else {
-					tilemap.SetTile(new Vector3Int(x, y, 0), null);
-					chunk.ForegroundTilemap.SetTile(new Vector3Int(x, y, 0), null);
-					chunk.OreAmount[x, y] = 0;
+					//tilemap.SetTile(new Vector3Int(x, y, 0), null);
+					//chunk.ForegroundTilemap.SetTile(new Vector3Int(x, y, 0), null);
+					//chunk.OreAmount[x, y] = 0;
 				}
+
+				chunk.SetTile(x, y, toSet, baseOre);
 			}
+		}
+		chunk.ApplyTiles();
+
+		chunk.Caverns = Cavern.GetChunkCaverns(chunk, chunk.MinCavernSize);
+		if (chunk.Caverns.Count > 0) {
+			chunk.BiggestCavern = chunk.Caverns.Aggregate((i1, i2) => i1.AirTiles.Count > i2.AirTiles.Count ? i1 : i2);
+		}
+		else {
+			chunk.BiggestCavern = null;
+		}
+
+		GenerateLevelFeatures(chunk);
+
+	}
+
+
+
+	private void GenerateLevelFeatures(Chunk chunk) {
+		if(chunk.BiggestCavern == null) {
+			print("no biggest cavern at " + chunk.ChunkStart);
+			return;
+		}
+
+		foreach (LevelFeatureSpawnPool pool in _spawnPoolFeatures.Keys) {
+			List<LevelFeature> featurePrefabs = GetValidLevelFeaturesForChunk(_spawnPoolFeatures[pool], chunk);
+			int numFeatures = GetNumLevelFeaturesToGen(pool, chunk);
+			
+			if(featurePrefabs.Count > 0) {
+				//print("spawning shit");
+				for (int i = 0; i < numFeatures; i++) {
+					LevelFeature prefabToUse = featurePrefabs.GetRandomElement();
+					chunk.SpawnLevelFeatureInCavern(prefabToUse);
+				}
+
+			}
+			
+
 		}
 	}
 
-	Vector3Int[] _positions;
-	TileBase[] _tiles;
-	public void GenerateChunkBatch(int xStart, int yStart, Chunk chunk) {
-		if (_positions == null) {
-			_positions = new Vector3Int[ChunkSize * ChunkSize];
-			_tiles = new TileBase[_positions.Length];
-		}
+	private List<LevelFeature> GetValidLevelFeaturesForChunk(List<LevelFeature> fullList, Chunk chunk) {
+		List<LevelFeature> result = new List<LevelFeature>();
 
-		Tilemap tilemap = chunk.ChunkTilemap;
+		foreach (LevelFeature feature in fullList) {
+			bool isValid = true;
+			//check if we have any caverns of the min size
+			if(chunk.BiggestCavern == null) {
+				isValid = false;
+			}
 
-		chunk.transform.position = new Vector3(xStart, yStart, 0);
-		for (int x = 0; x < ChunkSize; x++) {
-			for (int y = 0; y < ChunkSize; y++) {
-				float perlin = MainPerlin.GetPerlin(x + xStart, y + yStart);
-				float solidThreshold = SolidThresholdPerlin.GetPerlin(x + xStart, y + yStart);
-				if (perlin > solidThreshold) {
-					if (ShouldBeExplosive(x + xStart, y + yStart)) {
-						TileBase newTile = ExplosiveTiles[0];
-						_tiles[(y * ChunkSize) + x] = newTile;
-						_positions[(y * ChunkSize) + x].Set(x, y, 0);
-					}
-					else {
-						float normOre = Mathf.InverseLerp(solidThreshold, 1, perlin);
-						normOre = Mathf.InverseLerp(.5f, 1, normOre);
-						int oreAmount = Mathf.FloorToInt(normOre / (1.0f / TerrainTiles.Length));
-						oreAmount = Mathf.Clamp(oreAmount, 0, TerrainTiles.Length - 1);
-						TileBase newTile = TerrainTiles[oreAmount];
-						_tiles[(y * ChunkSize) + x] = newTile;
-						_positions[(y * ChunkSize) + x].Set(x, y, 0);
-					}
-				}
-				else {
-					_tiles[(y * ChunkSize) + x] = null;
-					_positions[(y * ChunkSize) + x].Set(x, y, 0);
+			foreach (Cavern cavern in chunk.Caverns) {
+				if(cavern.AirTiles.Count < feature.MinCavernSize) {
+					isValid = false;
 				}
 			}
+
+			//check the depth
+			if(chunk.ChunkStart.y > -feature.MinDepth || chunk.ChunkStart.y < -feature.MaxDepth) {
+				isValid = false;
+			}
+
+			if (isValid) {
+				result.Add(feature);
+			}
 		}
-		tilemap.SetTiles(_positions, _tiles);
+
+		return result;
 	}
+
+	private int GetNumLevelFeaturesToGen(LevelFeatureSpawnPool pool, Chunk chunk) {
+		switch (pool) {
+			case LevelFeatureSpawnPool.Doodads:
+				break;
+			case LevelFeatureSpawnPool.Enemies:
+				break;
+			case LevelFeatureSpawnPool.Traps:
+				break;
+			case LevelFeatureSpawnPool.Powerups:
+				break;
+			default:
+				break;
+		}
+		return Random.Range(0, 6);
+	}
+
+	
 
 	public void Update() {
 		

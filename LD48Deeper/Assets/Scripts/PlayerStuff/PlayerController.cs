@@ -9,17 +9,16 @@ using DG.Tweening;
 
 public class PlayerController : MonoBehaviour
 {
-	private Rigidbody2D _rb;
-	private AmmoController _ammo;
+	public Rigidbody2D RB;
+	public AmmoController AmmoRef;
 
 	private Vector2 _movementInput;
-	private bool _firingWeapon = false;
 
 	public float ControlledSpeed = 5;
 	public float MaxForce = 10;
 	public AnimationCurve AccelVelocityCurve;
 
-	public Bullet BootBulletPrefab;
+	public BootGun MainGun;
 	public Transform BootBulletSpawnPoint;
 
 	public int OreMultiplier = 3;
@@ -36,43 +35,27 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-		_rb = GetComponent<Rigidbody2D>();
-		_ammo = GetComponent<AmmoController>();
-
-		
+		RB = GetComponent<Rigidbody2D>();
+		AmmoRef = GetComponent<AmmoController>();
 	}
 
     // Update is called once per frame
     void Update()
     {
-		_timeSinceLastFired += Time.deltaTime;
+
 	}
 
 	private void FixedUpdate() {
-
 		float targetVel = _movementInput.x * ControlledSpeed;
-		float velDiff = targetVel - _rb.velocity.x;
+		float velDiff = targetVel - RB.velocity.x;
 		float normalizedVelDiff = Mathf.Abs(velDiff) / ControlledSpeed;
 
-		
 		float accel = AccelVelocityCurve.Evaluate(normalizedVelDiff / ControlledSpeed) * MaxForce * Mathf.Sign(velDiff);
-		_rb.AddForce(Vector2.right * accel);
-
+		RB.AddForce(Vector2.right * accel);
 	}
 
 	public void OnMove(InputValue val) {
 		_movementInput = val.Get<Vector2>();
-	}
-
-	public void OnFireWeapon(InputValue val) {
-		
-		float pressedVal = val.Get<float>();
-		if (pressedVal > 0) {
-			_firingWeapon = true;
-		}
-		else {
-			_firingWeapon = false;
-		}
 	}
 
 	public void OnVolumeDown() {
@@ -91,39 +74,20 @@ public class PlayerController : MonoBehaviour
 	public void OnFireBoots(InputValue val) {
 		DeathPanel.OnFireBoots();
 		if (!Pause.Paused) {
-			if (_ammo.TrySpendAmmo(BootBulletPrefab.AmmoCost)) {
-				if (_rb.velocity.y < 0) {
-					Vector3 newVel = _rb.velocity;
-					newVel.y *= .5f;
-					_rb.velocity = newVel; //half downward velocity
-				}
-				_rb.AddForce(Vector2.up * GetBootImpulse(), ForceMode2D.Impulse);
-				_timeSinceLastFired = 0;
-				Bullet newBullet = Instantiate(BootBulletPrefab, BootBulletSpawnPoint.position, Quaternion.identity);
-				newBullet.SetVelocityDirection(Vector2.down);
-
-				Vector3 punch = Vector3.down * .2f + Vector3.left * .1f;
-				SpriteTransform.DOComplete();
-				SpriteTransform.DOPunchScale(punch, .2f);
-
+			if(MainGun != null) {
+				MainGun.TryShootGun();
 			}
 		}
 	}
-	public float BootFullChargeTime = .1f;
-	public float BootMinImpulse = 2;
-	public float GetBootImpulse() {
-		float result = Mathf.Lerp(BootMinImpulse, BootImpulse, _timeSinceLastFired / BootFullChargeTime);
-		print("boots: " + result);
-		return result;
-	}
+	
 
 	public void OnExit() {
 		Application.Quit();
 	}
 
 	public float CollectOre(int amount) {
-		_ammo.AddAmmo(amount * OreMultiplier);
-		return (float)_ammo.CurrentAmmo / _ammo.MaxAmmo;
+		AmmoRef.AddAmmo(amount * OreMultiplier);
+		return (float)AmmoRef.CurrentAmmo / AmmoRef.MaxAmmo;
 		//PlayerAudioSource.pitch = Random.Range(.9f, 1.6f);
 		//PlayerAudioSource.PlayOneShot(OreAudioClip, 4);
 	}
@@ -137,8 +101,8 @@ public class PlayerController : MonoBehaviour
 		Camera.main.transform.parent = null;
 		GetComponent<Collider2D>().enabled = false;
 
-		_rb.velocity = Vector3.zero;
-		_rb.isKinematic = true;
+		RB.velocity = Vector3.zero;
+		RB.isKinematic = true;
 		SpriteTransform.gameObject.SetActive(false);
 	}
 
@@ -146,10 +110,10 @@ public class PlayerController : MonoBehaviour
 	bool dead = false;
 	public void OnCollisionEnter2D(Collision2D collision) {
 		deathCollision = collision;
-		print("vel: " + _rb.velocity);
+		print("vel: " + RB.velocity);
 		print("collision: " + collision.contacts[0].normal);
 		if(collision.contacts[0].normal.y >= .99f) {//if we hit the top of a tile
-			print("player vel: " + _rb.velocity.y);
+			print("player vel: " + RB.velocity.y);
 			print(transform.position.y - collision.contacts[0].normal.y);
 			PlayerDeath();
 			dead = true;

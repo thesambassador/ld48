@@ -101,15 +101,22 @@ Tilemap:
       e33: 0
   m_TileColorArray:
   - m_RefCount: 0
-    m_Data: {r: -7.036804, g: -7.036804, b: -7.036804, a: -7.036804}
+    m_Data: {r: -0.0000000025300437, g: -0.0000000025300437, b: -0.0000000025300437,
+      a: -0.0000000025300437}
   - m_RefCount: 0
-    m_Data: {r: 0.0000000016631461, g: 0.0000000016631461, b: 0.0000000016631461,
-      a: 0.0000000016631461}
+    m_Data: {r: -0.000000002517595, g: -0.000000002517595, b: -0.000000002517595,
+      a: -0.000000002517595}
+  - m_RefCount: 0
+    m_Data: {r: -0.0000000018845014, g: -0.0000000018845014, b: -0.0000000018845014,
+      a: -0.0000000018845014}
+  - m_RefCount: 0
+    m_Data: {r: -0.0000000025499176, g: -0.0000000025499176, b: -0.0000000025499176,
+      a: -0.0000000025499176}
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Origin: {x: -13, y: -13, z: 0}
-  m_Size: {x: 26, y: 18, z: 1}
+  m_Size: {x: 45, y: 45, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
   m_TileOrientation: 0
   m_TileOrientationMatrix:
@@ -248,6 +255,19 @@ MonoBehaviour:
   NoiseRenderer: {fileID: 5827386862211569759}
   TileRenderer: {fileID: 7947729951841671963}
   NoiseTransform: {fileID: 5662699237483610003}
+  MinCavernSize: 7
+  CavernDebugTiles:
+  - {fileID: 11400000, guid: 72a4e1627bb51e94d801f662a7eff7a6, type: 2}
+  - {fileID: 11400000, guid: 0362c2a20f72cea4ca80fb99c24dff48, type: 2}
+  - {fileID: 11400000, guid: 3a4c5fa1c5fe51d429e908ce3af1f74e, type: 2}
+  - {fileID: 11400000, guid: d4de1ac554665294bb382a67d37296cd, type: 2}
+  - {fileID: 11400000, guid: 1e9576f6a6c08a040af989ae2199348a, type: 2}
+  - {fileID: 11400000, guid: 993e376683c0e674ebe2bba28baf8cf3, type: 2}
+  - {fileID: 11400000, guid: 0e836a2a2aacea642a80fd5198d35214, type: 2}
+  - {fileID: 11400000, guid: 6ba6f538dd2fed846be9a7f19cb24c18, type: 2}
+  - {fileID: 11400000, guid: 120205172ab09974a80f8b1cdc358ee8, type: 2}
+  - {fileID: 11400000, guid: 4bde68852a96a5e47987b15b05a3ba5f, type: 2}
+  OutlineDebugTile: {fileID: 11400000, guid: 8caebcc80b0db6c4dabab1855fb9f58f, type: 2}
 --- !u!1 &4918466933218888205
 GameObject:
   m_ObjectHideFlags: 0
@@ -565,7 +585,7 @@ TilemapCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
-  m_MaximumTileChangeCount: 1000
+  m_MaximumTileChangeCount: 128
   m_ExtrusionFactor: 0.00001
 --- !u!114 &7947729951841671967
 MonoBehaviour:

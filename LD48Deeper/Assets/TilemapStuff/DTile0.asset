@@ -140,5 +140,10 @@ MonoBehaviour:
   Explodes: 0
   ExplodeRadius: 2
   OreAmount: 0
+  StartingHealth: 1
+  OreForegroundTiles:
+  - {fileID: 11400000, guid: 6a2ca031a1d5bb94abc862c25980e2af, type: 2}
+  - {fileID: 11400000, guid: f8a72e92b2a30214bacbdb01095eb08c, type: 2}
+  - {fileID: 11400000, guid: b41a1155fd049dd4798526626701e8df, type: 2}
   DestroyEffect: {fileID: 9193589596862648156, guid: 81a930fbb48e2214d84e1fe51b792f26,
     type: 3}

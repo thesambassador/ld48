@@ -10,20 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ca72b059b4adbfe4fa6494edfd230e73, type: 3}
-  m_Name: ExplosiveTile
+  m_Name: Destructable
   m_EditorClassIdentifier: 
-  m_DefaultSprite: {fileID: -1111172804763228175, guid: 075fa829e7bc1af418fbe845d9139190,
-    type: 3}
+  m_DefaultSprite: {fileID: 0}
   m_DefaultGameObject: {fileID: 0}
   m_DefaultColliderType: 1
   m_TilingRules: []
   Destructible: 1
-  Explodes: 1
-  ExplodeRadius: 2.5
+  Explodes: 0
+  ExplodeRadius: 2
   OreAmount: 0
   StartingHealth: 1
-  OreForegroundTiles:
-  - {fileID: 11400000, guid: 6a2ca031a1d5bb94abc862c25980e2af, type: 2}
-  - {fileID: 11400000, guid: f8a72e92b2a30214bacbdb01095eb08c, type: 2}
-  - {fileID: 11400000, guid: b41a1155fd049dd4798526626701e8df, type: 2}
+  OreForegroundTiles: []
   DestroyEffect: {fileID: 0}

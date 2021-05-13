@@ -13,17 +13,17 @@ public class DestructibleTilemap : MonoBehaviour
 	public PlayerController PlayerObject;
 	public Chunk TileChunk;
 
-	public void ProcessBulletHitAt(ContactPoint2D hit) {
+	public int ProcessBulletHitAt(ContactPoint2D hit, BulletProperties props, bool shouldExplode) {
 		Vector3 hitPosition = Vector3.zero;
 		hitPosition.x = hit.point.x - 0.1f * hit.normal.x;
 		hitPosition.y = hit.point.y - 0.1f * hit.normal.y;
 
 		Vector3Int tilePos = TargetTilemap.WorldToCell(hitPosition);
 
-		TryDestroyTileAtAllChunks(tilePos);
+		return TryDestroyTileAtAllChunks(tilePos, props, shouldExplode);
 	}
 
-	public void TryDestroyTileAtAllChunks(Vector3Int target) {
+	public int TryDestroyTileAtAllChunks(Vector3Int target, BulletProperties props = null, bool shouldExplode = false) {
 		if(TileChunk != null ) {
 			Chunk targetChunk = TileChunk;
 			while(target.x < 0 && targetChunk != null) {
@@ -45,17 +45,17 @@ public class DestructibleTilemap : MonoBehaviour
 			}
 
 			if(targetChunk != null) {
-				targetChunk.TryDestroyTileAt(target);
+				return targetChunk.TryDestroyTileAt(target, props, shouldExplode);
 			}
-
-
 		}
 		else {
-			TryDestroyTileAt(target);
+			TryDestroyTileAt(target, 0, props, shouldExplode);
+			return 1;
 		}
+		return 1;
 	}
 
-	public void TryDestroyTileAt(Vector3Int target, int ore=0) {
+	public void TryDestroyTileAt(Vector3Int target, int ore=0, BulletProperties props = null, bool shouldExplode = false) {
 		
 		Vector3 tileCenter = CellToTileCenter(target);
 
@@ -67,7 +67,22 @@ public class DestructibleTilemap : MonoBehaviour
 					GameObject effect = Instantiate(dTile.DestroyEffect);
 					effect.transform.position = tileCenter;
 				}
-				bool toExplode = dTile.Explodes;
+				bool tileExplodes = dTile.Explodes;
+				float radius = dTile.ExplodeRadius;
+
+				if(props != null) {
+					//if this is an explosive tile, use the explosive multiplier
+					if (tileExplodes) {
+						radius *= props.ExplosiveMultiplier;
+					}
+					//otherwise, if this is an explosive bullet...
+					else if(shouldExplode) {
+						tileExplodes = true;
+						radius = props.ExplodeRadius;
+					}
+				}
+
+
 
 				
 				TargetTilemap.SetTile(target, null);
@@ -79,8 +94,8 @@ public class DestructibleTilemap : MonoBehaviour
 					}
 				}
 
-				if (toExplode) {
-					DoExplosion(target, dTile.ExplodeRadius);
+				if (tileExplodes) {
+					DoExplosion(target, radius);
 				}
 
 			}
@@ -88,10 +103,13 @@ public class DestructibleTilemap : MonoBehaviour
 	}
 
 	public void DoExplosion(Vector3Int explosionCenter, float radius, bool doChunks = true) {
-		//print("Explosion at " + explosionCenter + " radius of " + radius);
+		print("Explosion at " + explosionCenter + " radius of " + radius);
 		Vector3 worldCenter = TargetTilemap.GetCellCenterWorld(explosionCenter);
-		Camera.main.DOComplete();
-		Camera.main.DOShakePosition(.2f, 1);
+
+		if (radius >= 2) {
+			Camera.main.DOComplete();
+			Camera.main.DOShakePosition(.2f, radius / 2);
+		}
 
 		int radCeil = Mathf.CeilToInt(radius);
 
